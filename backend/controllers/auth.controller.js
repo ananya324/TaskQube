@@ -90,5 +90,13 @@ const loginUser = async (req, res) => {
         });
     }
 };
+//Return the currently authenticated user.
+const getMe = async (req, res) => {
+  res.status(200).json(req.user);
+};
 
-module.exports = { registerUser, loginUser };
+module.exports = {
+  registerUser,
+  loginUser,
+  getMe,
+};
