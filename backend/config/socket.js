@@ -1,4 +1,6 @@
 const { Server } = require("socket.io");
+const registerTaskSocket = require("../sockets/task.socket");
+const registerPresenceSocket = require("../sockets/presence.socket");
 
 //Stores the Socket.IO instance globally inside this file.
 let io;
@@ -13,6 +15,8 @@ const initSocket = (server) => {
     });
     io.on("connection", (socket) => {
         console.log(`User connectes: ${socket.id}`);
+        registerTaskSocket(io, socket);
+        registerPresenceSocket(io, socket);
 
         socket.on("disconnect", () => {
             console.log(`User Disconnected: ${socket.id}`);

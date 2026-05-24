@@ -3,6 +3,8 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/auth.routes");
 const workspaceRoutes = require("./routes/workspace.routes")
+const taskRoutes = require("./routes/task.routes");
+const noteRoutes = require("./routes/note.routes");
 
 const app = express();
 
@@ -19,6 +21,8 @@ app.use(express.urlencoded({ extended: true }));//Allows backend to read form da
 app.use(cookieParser());
 app.use("/api/auth",authRoutes);
 app.use("/api/workspaces",workspaceRoutes);
+app.use("/api/tasks",taskRoutes);
+app.use("/api/notes", noteRoutes);
 
 app.get("/", (req, res) => {
   res.send("API Running...");
