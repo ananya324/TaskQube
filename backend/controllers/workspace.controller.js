@@ -1,6 +1,8 @@
 const Workspace = require("../models/Workspace");
 const User = require("../models/User");
 const generateRoomCode = require("../utils/generateRoomCode");
+const Activity = require("../models/Activity");
+
 
 const createWorkspace = async (req, res) => {
 
@@ -85,8 +87,26 @@ const joinWorkspace = async (req, res) => {
         });
     }
 };
+const getWorkspaceActivities = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+
+    const activities = await Activity.find({
+      workspace: workspaceId,
+    })
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(activities);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 module.exports = {
-    createWorkspace,
-    getUserWorkspaces,
-    joinWorkspace,
+  createWorkspace,
+  getUserWorkspaces,
+  joinWorkspace,
+  getWorkspaceActivities,
 };

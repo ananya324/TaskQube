@@ -1,40 +1,49 @@
 const Task = require("../models/Task");
 const Workspace = require("../models/Workspace");
+const logActivity = require("../utils/logActivity");
 
 const createTask = async (req, res) => {
-    try {
-        const {
-            title,
-            description,
-            workspaceId,
-            assignedTo,
-            priority,
-            dueDate,
-        } = req.body;
+  try {
+    const {
+      title,
+      description,
+      workspaceId,
+      assignedTo,
+      priority,
+      dueDate,
+    } = req.body;
 
-        const workspace = await Workspace.findById(workspaceId);
+    const workspace = await Workspace.findById(workspaceId);
 
-        if (!workspace) {
-            return res.status(404).json({
-                message: "Workspace not found",
-            });
-        }
-        const task = await Task.create({
-            title,
-            description,
-            workspace: workspaceId,
-            assignedTo,
-            createdBy: req.user._id,
-            priority,
-            dueDate,
-        });
-        res.status(201).json(task);
-    }catch(error){
-        res.status(500).json({
-            message:error.message,
-        });
+    if (!workspace) {
+      return res.status(404).json({
+        message: "Workspace not found",
+      });
     }
+    const task = await Task.create({
+      title,
+      description,
+      workspace: workspaceId,
+      assignedTo,
+      createdBy: req.user._id,
+      priority,
+      dueDate,
+    });
+    await logActivity({
+      workspace: workspaceId,
+      user: req.user._id,
+      action: "Created a task",
+      entityType: "task",
+      entityId: task._id,
+    });
+    res.status(201).json(task);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
+
 
 const getWorkspaceTasks = async (req, res) => {
   try {

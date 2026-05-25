@@ -7,6 +7,7 @@ const taskRoutes = require("./routes/task.routes");
 const noteRoutes = require("./routes/note.routes");
 const reminderRoutes = require("./routes/reminder.routes");
 const errorHandler = require("./middleware/error.middleware");
+const apiLimiter = require("./middleware/rateLimit.middleware");
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/tasks",taskRoutes);
 app.use("/api/notes", noteRoutes);
 app.use("/api/reminders",reminderRoutes);
 app.use(errorHandler);
+app.use(apiLimiter);
 
 app.get("/", (req, res) => {
   res.send("API Running...");
