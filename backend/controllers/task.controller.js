@@ -1,6 +1,9 @@
 const Task = require("../models/Task");
 const Workspace = require("../models/Workspace");
 const logActivity = require("../utils/logActivity");
+const {
+  createTaskService,
+} = require("../services/task.service");
 
 const createTask = async (req, res) => {
   try {
@@ -20,10 +23,10 @@ const createTask = async (req, res) => {
         message: "Workspace not found",
       });
     }
-    const task = await Task.create({
+    const task = await createTaskService({
       title,
       description,
-      workspace: workspaceId,
+      workspaceId,
       assignedTo,
       createdBy: req.user._id,
       priority,

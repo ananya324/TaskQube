@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 const registerTaskSocket = require("../sockets/task.socket");
 const registerPresenceSocket = require("../sockets/presence.socket");
 const registerWorkspaceSocket = require("../sockets/workspace.socket");
+const socketAuth = require("../middleware/socketAuth.middleware");
 
 //Stores the Socket.IO instance globally inside this file.
 let io;
@@ -14,6 +15,7 @@ const initSocket = (server) => {
             credentials: true,
         },
     });
+    io.use(socketAuth);
     io.on("connection", (socket) => {
         console.log(`User connectes: ${socket.id}`);
         registerTaskSocket(io, socket);

@@ -5,9 +5,17 @@ const protect = require("../middleware/auth.middleware");
 const { createTask,
     getWorkspaceTasks,
     updateTaskStatus,
-    deleteTask,} = require("../controllers/task.controller");
+    deleteTask, } = require("../controllers/task.controller");
+const {
+    validateTask,
+} = require("../validators/task.validator");
 
-router.post("/", protect, createTask);
+router.post(
+  "/",
+  protect,
+  validateTask,
+  createTask
+);
 router.get("/:workspaceId", protect, getWorkspaceTasks);
 router.put("/:taskId/status", protect, updateTaskStatus);
 router.delete("/:taskId", protect, deleteTask);
