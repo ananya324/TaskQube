@@ -5,6 +5,8 @@ const authRoutes = require("./routes/auth.routes");
 const workspaceRoutes = require("./routes/workspace.routes")
 const taskRoutes = require("./routes/task.routes");
 const noteRoutes = require("./routes/note.routes");
+const reminderRoutes = require("./routes/reminder.routes");
+const errorHandler = require("./middleware/error.middleware");
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use("/api/auth",authRoutes);
 app.use("/api/workspaces",workspaceRoutes);
 app.use("/api/tasks",taskRoutes);
 app.use("/api/notes", noteRoutes);
+app.use("/api/reminders",reminderRoutes);
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.send("API Running...");
