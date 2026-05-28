@@ -8,7 +8,7 @@ const {
 } = require("../validators/workspace.validator");
 
 const {
-  createWorkspace, getUserWorkspaces, joinWorkspace
+  createWorkspace, getUserWorkspaces, joinWorkspace,getWorkspaceById
 } = require("../controllers/workspace.controller");
 
 router.post(
@@ -19,5 +19,6 @@ router.post(
 );
 router.get("/", protect, getUserWorkspaces);
 router.post("/join", protect, joinWorkspace);
+router.get("/:id", protect, getWorkspaceById);
 
 module.exports = router;

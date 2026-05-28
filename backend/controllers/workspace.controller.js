@@ -97,9 +97,27 @@ const getWorkspaceActivities = async (req, res) => {
     });
   }
 };
+
+const getWorkspaceById = async (req, res) => {
+  try {
+    const workspace = await Workspace.findById(req.params.id)
+      .populate("owner", "name email")
+      .populate("members", "name email");
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    res.status(200).json(workspace);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createWorkspace,
   getUserWorkspaces,
   joinWorkspace,
+  getWorkspaceById,
   getWorkspaceActivities,
 };

@@ -9,6 +9,7 @@ const reminderRoutes = require("./routes/reminder.routes");
 const errorHandler = require("./middleware/error.middleware");
 const apiLimiter = require("./middleware/rateLimit.middleware");
 const aiRoutes = require("./routes/ai.routes");
+const messageRoutes = require("./routes/message.routes");
 
 const app = express();
 
@@ -31,6 +32,8 @@ app.use("/api/reminders",reminderRoutes);
 app.use(errorHandler);
 app.use(apiLimiter);
 app.use("/api/ai", aiRoutes);
+app.use("/api/messages", messageRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("API Running...");
