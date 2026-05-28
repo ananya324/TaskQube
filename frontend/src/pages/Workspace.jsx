@@ -259,11 +259,10 @@ const Workspace = () => {
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-heading font-medium border-b-2 transition ${
-                activeTab === key
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-heading font-medium border-b-2 transition ${activeTab === key
                   ? "border-primary text-primary"
                   : "border-transparent text-muted hover:text-gray-700"
-              }`}
+                }`}
             >
               <Icon size={15} />
               {label}
@@ -445,7 +444,74 @@ const Workspace = () => {
             </div>
           </div>
         )}
+        {/* Chat Tab */}
+        {activeTab === "chat" && (
+          <div className="max-w-3xl">
+            <h2 className="font-heading text-xl font-bold text-gray-900 mb-6">Team Chat</h2>
+            <div className="bg-surface border border-border rounded-2xl shadow-sm flex flex-col h-[60vh]">
 
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {messages.length === 0 ? (
+                  <div className="text-center py-16">
+                    <MessageSquare size={32} className="text-muted mx-auto mb-3" />
+                    <p className="text-muted text-sm">No messages yet. Say hello!</p>
+                  </div>
+                ) : (
+                  messages.map((msg, i) => {
+                    const isOwn = msg.sender?._id === user?._id || msg.sender === user?._id;
+                    return (
+                      <div key={msg._id || i} className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
+                        <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-heading font-bold text-xs flex-shrink-0">
+                          {msg.sender?.name?.charAt(0).toUpperCase() || "?"}
+                        </div>
+                        <div className={`max-w-xs lg:max-w-md ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
+                          {!isOwn && (
+                            <span className="text-xs text-muted font-medium px-1">{msg.sender?.name}</span>
+                          )}
+                          <div className={`px-4 py-2.5 rounded-2xl text-sm ${isOwn
+                              ? "bg-primary text-white rounded-br-sm"
+                              : "bg-background border border-border text-gray-900 rounded-bl-sm"
+                            }`}>
+                            {msg.content}
+                          </div>
+                          <span className="text-xs text-muted px-1">
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                {typingUser && (
+                  <p className="text-xs text-muted italic">{typingUser} is typing...</p>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <div className="border-t border-border p-4">
+                <form onSubmit={handleSendMessage} className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={messageInput}
+                    onChange={(e) => {
+                      setMessageInput(e.target.value);
+                      getSocket().emit("typing", { workspaceId: id, user: user.name });
+                    }}
+                    placeholder="Type a message..."
+                    className="flex-1 bg-background border border-border text-gray-900 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-gray-400 transition"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!messageInput.trim()}
+                    className="bg-primary hover:bg-primary-hover text-white font-heading font-semibold text-sm px-5 py-2.5 rounded-xl transition disabled:opacity-40"
+                  >
+                    Send
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Members Tab */}
         {activeTab === "members" && (
           <div className="max-w-xl">
@@ -503,75 +569,7 @@ const Workspace = () => {
           </div>
         )}
 
-        {/* Chat Tab */}
-        {activeTab === "chat" && (
-          <div className="max-w-3xl">
-            <h2 className="font-heading text-xl font-bold text-gray-900 mb-6">Team Chat</h2>
-            <div className="bg-surface border border-border rounded-2xl shadow-sm flex flex-col h-[60vh]">
 
-              <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                {messages.length === 0 ? (
-                  <div className="text-center py-16">
-                    <MessageSquare size={32} className="text-muted mx-auto mb-3" />
-                    <p className="text-muted text-sm">No messages yet. Say hello!</p>
-                  </div>
-                ) : (
-                  messages.map((msg, i) => {
-                    const isOwn = msg.sender?._id === user?._id || msg.sender === user?._id;
-                    return (
-                      <div key={msg._id || i} className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
-                        <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-heading font-bold text-xs flex-shrink-0">
-                          {msg.sender?.name?.charAt(0).toUpperCase() || "?"}
-                        </div>
-                        <div className={`max-w-xs lg:max-w-md ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
-                          {!isOwn && (
-                            <span className="text-xs text-muted font-medium px-1">{msg.sender?.name}</span>
-                          )}
-                          <div className={`px-4 py-2.5 rounded-2xl text-sm ${
-                            isOwn
-                              ? "bg-primary text-white rounded-br-sm"
-                              : "bg-background border border-border text-gray-900 rounded-bl-sm"
-                          }`}>
-                            {msg.content}
-                          </div>
-                          <span className="text-xs text-muted px-1">
-                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-                {typingUser && (
-                  <p className="text-xs text-muted italic">{typingUser} is typing...</p>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              <div className="border-t border-border p-4">
-                <form onSubmit={handleSendMessage} className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    value={messageInput}
-                    onChange={(e) => {
-                      setMessageInput(e.target.value);
-                      getSocket().emit("typing", { workspaceId: id, user: user.name });
-                    }}
-                    placeholder="Type a message..."
-                    className="flex-1 bg-background border border-border text-gray-900 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-gray-400 transition"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!messageInput.trim()}
-                    className="bg-primary hover:bg-primary-hover text-white font-heading font-semibold text-sm px-5 py-2.5 rounded-xl transition disabled:opacity-40"
-                  >
-                    Send
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
 
       </main>
     </div>
