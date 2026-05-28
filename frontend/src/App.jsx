@@ -4,10 +4,11 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Workspace from "./pages/Workspace";
+import Home from "./pages/Home";
 
 const PrivateRoute = ({ children }) => {
   const { user } = useAuth();
-  return user ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/" />;
 };
 
 const PublicRoute = ({ children }) => {
@@ -18,7 +19,15 @@ const PublicRoute = ({ children }) => {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" />} />
+      {/* Home — public only */}
+      <Route
+        path="/"
+        element={
+          <PublicRoute>
+            <Home />
+          </PublicRoute>
+        }
+      />
 
       <Route
         path="/login"
@@ -55,6 +64,9 @@ function App() {
           </PrivateRoute>
         }
       />
+
+      {/* Catch all */}
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }
