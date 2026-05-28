@@ -1,14 +1,7 @@
 import axiosInstance from "./axios";
 
 export const createTask = async (data) => {
-  const response = await axiosInstance.post("/tasks", {
-    title: data.title,
-    description: data.description,
-    workspaceId: data.workspace,
-    assignedTo: data.assignedTo,
-    priority: data.priority,
-    dueDate: data.dueDate,
-  });
+  const response = await axiosInstance.post("/tasks", data);
   return response.data;
 };
 

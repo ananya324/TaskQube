@@ -7,21 +7,25 @@ const noteSchema = new mongoose.Schema(
       ref: "Workspace",
       required: true,
     },
-
-    content: {
+    title: {
       type: String,
-      default: "",
+      required: true,
+      trim: true,
+      default: "Untitled Note",
     },
-
+    bullets: [
+      {
+        type: String,
+        trim: true,
+      }
+    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Note", noteSchema);
