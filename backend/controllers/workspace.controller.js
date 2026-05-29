@@ -41,52 +41,54 @@ const getUserWorkspaces = async (req, res) => {
 const joinWorkspace = async (req, res) => {
   try {
     const { roomCode } = req.body;
-
     const workspace = await Workspace.findOne({ roomCode });
 
     if (!workspace) {
-      return res.status(404).json({
-        message: "Workspace not found",
-      });
+      return res.status(404).json({ message: "Workspace not found" });
     }
+
     const alreadyMember = workspace.members.some(
       (member) => member.toString() === req.user._id.toString()
     );
     if (alreadyMember) {
-      return res.status(400).json({
-        message: "Already joined workspace",
-      });
+      return res.status(400).json({ message: "Already joined workspace" });
     }
 
     await Workspace.findByIdAndUpdate(workspace._id, {
-      $push: {
-        members: req.user._id,
-      },
+      $push: { members: req.user._id },
     });
 
     await User.findByIdAndUpdate(req.user._id, {
-      $push: {
-        workspaces: workspace._id,
-      },
+      $push: { workspaces: workspace._id },
     });
-    await logActivity({
-      workspace: workspace._id,
-      user: req.user._id,
-      action: "joined the workspace",
-      entityType: "workspace",
-      entityId: workspace._id,
-    });
-    // Emit new-activity to workspace room
-getIO().to(workspace._id.toString()).emit("new-activity");
+
+    // Log activity before response
+    try {
+      await logActivity({
+        workspace: workspace._id,
+        user: req.user._id,
+        action: "joined the workspace",
+        entityType: "workspace",
+        entityId: workspace._id,
+      });
+    } catch (e) {
+      console.log("logActivity error:", e.message);
+    }
+
+    // Emit socket safely
+    try {
+      const { getIO } = require("../config/socket");
+      getIO().to(workspace._id.toString()).emit("new-activity");
+    } catch (e) {
+      console.log("Socket emit error:", e.message);
+    }
 
     res.status(200).json({
       message: "Workspace joined successfully",
       workspace,
     });
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 const getWorkspaceActivities = async (req, res) => {

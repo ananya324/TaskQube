@@ -12,6 +12,7 @@ const aiRoutes = require("./routes/ai.routes");
 const messageRoutes = require("./routes/message.routes");
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(
   cors({
