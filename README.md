@@ -1,4 +1,4 @@
-# TaskQube 🚀
+# TaskQube 
 
 A real-time collaborative workspace platform that combines task management, team communication, collaborative notes, and meeting coordination into a single workspace.
 
