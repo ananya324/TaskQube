@@ -1,17 +1,28 @@
 const Note = require("../models/Note");
+const logActivity = require("../utils/logActivity");
 
 const createNote = async (req, res) => {
   try {
     const { workspaceId, title, bullets } = req.body;
-
     const note = await Note.create({
       workspace: workspaceId,
       title: title || "Untitled Note",
       bullets: bullets || [],
       createdBy: req.user._id,
     });
-
     const populated = await note.populate("createdBy", "name email");
+
+    await logActivity({
+      workspace: workspaceId,
+      user: req.user._id,
+      action: `added a note: ${title || "Untitled Note"}`,
+      entityType: "note",
+      entityId: note._id,
+    });
+    const { getIO } = require("../config/socket");
+    // after logActivity
+    getIO().to(workspaceId).emit("new-activity");
+
     res.status(201).json(populated);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -6,7 +6,7 @@ import ChatBubble from "./ChatBubble";
 import { MessageSquare } from "lucide-react";
 import toast from "react-hot-toast";
 
-const ChatSection = ({ workspaceId, onNewMessage }) => {
+const ChatSection = ({ workspaceId, onNewMessage, isActive }) => {
     const { user } = useAuth();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
@@ -14,7 +14,14 @@ const ChatSection = ({ workspaceId, onNewMessage }) => {
     const [typingUser, setTypingUser] = useState(null);
     const messagesEndRef = useRef(null);
     const typingTimeout = useRef(null);
+    const notifiedRef = useRef(false);
 
+
+    useEffect(() => {
+        if (isActive) {
+            notifiedRef.current = false;
+        }
+    }, [isActive]);
     useEffect(() => {
         fetchMessages();
     }, [workspaceId]);
@@ -27,16 +34,18 @@ const ChatSection = ({ workspaceId, onNewMessage }) => {
 
         socket.on("receive-message", (message) => {
             setMessages((prev) => {
-                // Avoid duplicate messages
-                if (prev.some((m) => m._id === message._id)) {
-                    return prev;
-                }
-
+                if (prev.some((m) => m._id === message._id)) return prev;
                 return [...prev, message];
             });
 
-            // Notify parent for unread badge
             if (message.sender?._id !== user?._id) {
+                // One-time toast only
+                if (!notifiedRef.current) {
+                    notifiedRef.current = true;
+                    toast(`💬 ${message.sender?.name} sent a message`, {
+                        duration: 4000,
+                    });
+                }
                 onNewMessage?.();
             }
         });

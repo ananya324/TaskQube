@@ -18,3 +18,7 @@ export const getWorkspaceById = async (id) => {
   const response = await axiosInstance.get(`/workspaces/${id}`);
   return response.data;
 };
+export const getWorkspaceActivities = async (workspaceId) => {
+  const response = await axiosInstance.get(`/workspaces/${workspaceId}/activities`);
+  return response.data;
+};

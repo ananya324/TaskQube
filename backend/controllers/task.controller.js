@@ -39,6 +39,9 @@ const createTask = async (req, res) => {
       entityType: "task",
       entityId: task._id,
     });
+    const { getIO } = require("../config/socket");
+    // after logActivity
+    getIO().to(workspaceId).emit("new-activity");
     res.status(201).json(task);
   } catch (error) {
     res.status(500).json({

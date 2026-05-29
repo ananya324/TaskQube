@@ -1,100 +1,204 @@
-import { Trash2, RefreshCw, Calendar, User } from "lucide-react";
+import { Trash2, RefreshCw, Calendar } from "lucide-react";
 
-const PRIORITY_STYLES = {
-  low: "bg-emerald-50 text-emerald-700",
-  medium: "bg-amber-50 text-amber-700",
-  high: "bg-rose-50 text-rose-600",
+const PRIORITY = {
+  low:    { label: "Low",    color: "#059669", bg: "#ecfdf5" },
+  medium: { label: "Medium", color: "#d97706", bg: "#fffbeb" },
+  high:   { label: "High",   color: "#e11d48", bg: "#fff1f2" },
 };
 
 const STATUS_OPTIONS = ["todo", "in-progress", "completed"];
 
+const STATUS_STYLES = {
+  "todo":        { color: "#64748b", bg: "#f1f5f9" },
+  "in-progress": { color: "#0891b2", bg: "#ecfeff" },
+  "completed":   { color: "#059669", bg: "#ecfdf5" },
+};
+
+const STATUS_LABELS = {
+  "todo": "Todo",
+  "in-progress": "In Progress",
+  "completed": "Completed",
+};
+
+const avatarColor = (name = "") => {
+  const colors = ["#0d9488", "#0891b2", "#7c3aed", "#d97706", "#be185d", "#059669"];
+  return colors[name.charCodeAt(0) % colors.length];
+};
+
 const TaskCard = ({ task, isAdmin, currentUserId, onDelete, onStatusChange, onReassign }) => {
   const isAssignedToMe = task.assignedTo?._id === currentUserId;
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "completed";
+  const priority = PRIORITY[task.priority] || PRIORITY.medium;
+  const statusStyle = STATUS_STYLES[task.status] || STATUS_STYLES.todo;
+  const assigneeName = task.assignedTo?.name || "Unassigned";
 
   return (
-    <div className={`bg-surface border rounded-2xl p-4 group transition hover:shadow-sm ${
-      isOverdue ? "border-rose-200 bg-rose-50/30" : "border-border"
-    }`}>
+    <>
+      <style>{`
+        .tc-wrap {
+          background: #fff;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 11px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .tc-wrap:hover {
+          box-shadow: 0 4px 18px rgba(13,148,136,0.09);
+          transform: translateY(-1px);
+        }
+        .tc-wrap.overdue {
+          border-color: #fecdd3;
+          background: #fffafa;
+        }
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <p className="font-heading font-semibold text-gray-900 text-sm leading-snug">
-          {task.title}
-          {isOverdue && (
-            <span className="ml-2 text-xs text-rose-500 font-medium">Overdue</span>
-          )}
-        </p>
-        {isAdmin && (
-          <button
-            onClick={() => onDelete(task._id)}
-            className="opacity-0 group-hover:opacity-100 text-muted hover:text-rose-500 transition flex-shrink-0"
-          >
-            <Trash2 size={13} />
-          </button>
-        )}
-      </div>
+        /* header */
+        .tc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+        .tc-title {
+          font-family: 'Bricolage Grotesque', sans-serif;
+          font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.4; flex: 1;
+        }
+        .tc-overdue-pill {
+          font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+          color: #e11d48; background: #fff1f2;
+          padding: 2px 8px; border-radius: 100px; white-space: nowrap; margin-top: 2px;
+        }
+        .tc-delete {
+          background: none; border: none; cursor: pointer; padding: 3px;
+          border-radius: 7px; color: #cbd5e1; flex-shrink: 0;
+          opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s;
+        }
+        .tc-wrap:hover .tc-delete { opacity: 1; }
+        .tc-delete:hover { color: #e11d48; background: #fff1f2; }
 
-      {/* Description */}
-      {task.description && (
-        <p className="text-muted text-xs mb-3 line-clamp-2">{task.description}</p>
-      )}
+        /* desc */
+        .tc-desc {
+          font-size: 12.5px; color: #94a3b8; line-height: 1.65;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
 
-      {/* Assigned to */}
-      <div className="flex items-center gap-1.5 mb-3">
-        <User size={12} className="text-muted" />
-        <span className="text-xs text-muted">
-          {task.assignedTo?.name || "Unassigned"}
-        </span>
-      </div>
+        /* meta */
+        .tc-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .tc-meta-item { display: flex; align-items: center; gap: 6px; }
+        .tc-meta-text { font-size: 12px; color: #94a3b8; }
+        .tc-avatar {
+          width: 20px; height: 20px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+        }
 
-      {/* Due date */}
-      {task.dueDate && (
-        <div className="flex items-center gap-1.5 mb-3">
-          <Calendar size={12} className={isOverdue ? "text-rose-400" : "text-muted"} />
-          <span className={`text-xs ${isOverdue ? "text-rose-500 font-medium" : "text-muted"}`}>
-            {new Date(task.dueDate).toLocaleDateString("en-US", {
-              month: "short", day: "numeric", year: "numeric"
-            })}
-          </span>
-        </div>
-      )}
+        /* footer */
+        .tc-footer {
+          display: flex; align-items: center; justify-content: space-between;
+          padding-top: 11px; border-top: 1px solid #f1f5f9; gap: 8px; flex-wrap: wrap;
+        }
+        .tc-priority {
+          font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+          padding: 3px 10px; border-radius: 100px;
+        }
+        .tc-footer-right { display: flex; align-items: center; gap: 8px; }
+        .tc-reassign {
+          display: inline-flex; align-items: center; gap: 5px;
+          background: none; border: 1.5px solid #e2e8f0; cursor: pointer;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; font-weight: 600; color: #64748b;
+          padding: 4px 10px; border-radius: 8px;
+          transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+        .tc-reassign:hover { border-color: #0d9488; color: #0d9488; background: #f0fdfa; }
+        .tc-select {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 11px; font-weight: 700; border-radius: 8px;
+          padding: 4px 22px 4px 9px; cursor: pointer; outline: none;
+          border: 1.5px solid transparent;
+          appearance: none; -webkit-appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+          background-repeat: no-repeat; background-position: right 7px center;
+          transition: border-color 0.15s;
+        }
+        .tc-select:focus { border-color: #0d9488; }
+      `}</style>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PRIORITY_STYLES[task.priority] || PRIORITY_STYLES.medium}`}>
-          {task.priority}
-        </span>
+      <div className={`tc-wrap${isOverdue ? " overdue" : ""}`}>
 
-        <div className="flex items-center gap-2">
-          {/* Reassign — admin only */}
+        {/* Header */}
+        <div className="tc-header">
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+            <span className="tc-title">{task.title}</span>
+            {isOverdue && <span className="tc-overdue-pill">⚠ Overdue</span>}
+          </div>
           {isAdmin && (
-            <button
-              onClick={() => onReassign(task)}
-              className="text-xs text-muted hover:text-primary flex items-center gap-1 transition"
-            >
-              <RefreshCw size={11} />
-              Reassign
+            <button className="tc-delete" onClick={() => onDelete(task._id)} title="Delete task">
+              <Trash2 size={14} />
             </button>
           )}
+        </div>
 
-          {/* Status — admin or assigned member */}
-          {(isAdmin || isAssignedToMe) && (
-            <select
-              value={task.status}
-              onChange={(e) => onStatusChange(task, e.target.value)}
-              className="text-xs text-muted bg-transparent border border-border rounded-lg px-2 py-1 outline-none cursor-pointer hover:border-primary transition"
+        {/* Description */}
+        {task.description && (
+          <p className="tc-desc">{task.description}</p>
+        )}
+
+        {/* Meta */}
+        <div className="tc-meta">
+          <div className="tc-meta-item">
+            <div
+              className="tc-avatar"
+              style={{ background: avatarColor(assigneeName) }}
             >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s === "in-progress" ? "In Progress" : s.charAt(0).toUpperCase() + s.slice(1)}
-                </option>
-              ))}
-            </select>
+              {assigneeName.charAt(0).toUpperCase()}
+            </div>
+            <span className="tc-meta-text">{assigneeName}</span>
+          </div>
+
+          {task.dueDate && (
+            <div className="tc-meta-item">
+              <Calendar size={12} color={isOverdue ? "#e11d48" : "#94a3b8"} />
+              <span className="tc-meta-text" style={isOverdue ? { color: "#e11d48" } : {}}>
+                {new Date(task.dueDate).toLocaleDateString("en-US", {
+                  month: "short", day: "numeric", year: "numeric",
+                })}
+              </span>
+            </div>
           )}
         </div>
+
+        {/* Footer */}
+        <div className="tc-footer">
+          <span
+            className="tc-priority"
+            style={{ color: priority.color, background: priority.bg }}
+          >
+            {priority.label}
+          </span>
+
+          <div className="tc-footer-right">
+            {isAdmin && (
+              <button className="tc-reassign" onClick={() => onReassign(task)}>
+                <RefreshCw size={10} /> Reassign
+              </button>
+            )}
+            {(isAdmin || isAssignedToMe) && (
+              <select
+                value={task.status}
+                onChange={(e) => onStatusChange(task, e.target.value)}
+                className="tc-select"
+                style={{
+                  color: statusStyle.color,
+                  background: statusStyle.bg,
+                }}
+              >
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                ))}
+              </select>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

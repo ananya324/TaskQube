@@ -10,6 +10,8 @@ import ChatSection from "../components/chat/ChatSection";
 import MembersSection from "../components/members/MembersSection";
 import MeetButton from "../components/meet/MeetButton";
 import toast from "react-hot-toast";
+import { Bell } from "lucide-react";
+import ActivityPanel from "../components/activity/ActivityPanel";
 
 const Workspace = () => {
   const { id } = useParams();
@@ -19,10 +21,14 @@ const Workspace = () => {
   const [workspace, setWorkspace] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("tasks");
-  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [hasUnreadChat, setHasUnreadChat] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showActivity, setShowActivity] = useState(false);
+  const [unreadActivity, setUnreadActivity] = useState(true);
+
 
   const isAdmin = workspace?.owner?._id === user?._id;
+
 
   // Fetch workspace
   useEffect(() => {
@@ -49,21 +55,26 @@ const Workspace = () => {
       setOnlineUsers(users);
     });
 
+    socket.on("new-activity", () => {
+      setUnreadActivity(true);
+    });
+
     return () => {
       socket.off("online-users");
+      socket.off("new-activity");
     };
   }, [id, user._id]);
 
   // Clear unread when chat tab is active
   useEffect(() => {
     if (activeTab === "chat") {
-      setUnreadMessages(0);
+      setHasUnreadChat(false);
     }
   }, [activeTab]);
 
   const handleNewMessage = () => {
     if (activeTab !== "chat") {
-      setUnreadMessages((prev) => prev + 1);
+      setHasUnreadChat(true);
     }
   };
 
@@ -74,7 +85,8 @@ const Workspace = () => {
       key: "chat",
       label: "Chat",
       icon: MessageSquare,
-      badge: unreadMessages > 0 ? unreadMessages : null,
+      badge: hasUnreadChat,
+
     },
     { key: "members", label: "Members", icon: Users },
   ];
@@ -118,6 +130,19 @@ const Workspace = () => {
 
         {/* Online presence */}
         <div className="flex items-center gap-2">
+          {/* Bell */}
+          <button
+            onClick={() => {
+              setShowActivity(true);
+              setUnreadActivity(false);
+            }}
+            className="relative text-muted hover:text-gray-900 transition"
+          >
+            <Bell size={18} />
+            {unreadActivity && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full" />
+            )}
+          </button>
           <MeetButton
             workspaceId={id}
             userName={user?.name}
@@ -134,6 +159,11 @@ const Workspace = () => {
                 {uid?.charAt(0)?.toUpperCase() || "?"}
               </div>
             ))}
+            {onlineUsers.length > 4 && (
+              <div className="w-7 h-7 rounded-full bg-gray-100 text-xs flex items-center justify-center border-2 border-surface">
+                +{onlineUsers.length - 4}
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -154,9 +184,7 @@ const Workspace = () => {
               {label}
               {/* Unread badge */}
               {badge && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                  {badge > 9 ? "9+" : badge}
-                </span>
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full" />
               )}
             </button>
           ))}
@@ -175,12 +203,16 @@ const Workspace = () => {
         {activeTab === "notes" && (
           <NoteSection workspaceId={id} />
         )}
-        {activeTab === "chat" && (
+
+        {/* Always mounted so socket listeners stay alive */}
+        <div className={activeTab === "chat" ? "block" : "hidden"}>
           <ChatSection
             workspaceId={id}
             onNewMessage={handleNewMessage}
+            isActive={activeTab === "chat"}
           />
-        )}
+        </div>
+
         {activeTab === "members" && (
           <MembersSection
             workspace={workspace}
@@ -188,6 +220,14 @@ const Workspace = () => {
           />
         )}
       </main>
+      {/* Activity Panel */}
+      {showActivity && (
+        <ActivityPanel
+          workspaceId={id}
+          onClose={() => setShowActivity(false)}
+          onSeen={() => setUnreadActivity(false)}
+        />
+      )}
     </div>
   );
 };
