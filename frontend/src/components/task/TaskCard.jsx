@@ -1,4 +1,4 @@
-import { Trash2, RefreshCw, Calendar } from "lucide-react";
+import { Trash2, RefreshCw, Calendar, Clock } from "lucide-react";
 
 const PRIORITY = {
   low:    { label: "Low",    color: "#059669", bg: "#ecfdf5" },
@@ -25,12 +25,26 @@ const avatarColor = (name = "") => {
   return colors[name.charCodeAt(0) % colors.length];
 };
 
+const isOverdue = (task) =>
+  !!task.dueDate && task.status !== "completed" && new Date(task.dueDate) < new Date();
+
+const isDueSoon = (task) => {
+  if (!task.dueDate || task.status === "completed") return false;
+  const hrs = (new Date(task.dueDate) - new Date()) / 3600000;
+  return hrs > 0 && hrs <= 24;
+};
+
 const TaskCard = ({ task, isAdmin, currentUserId, onDelete, onStatusChange, onReassign }) => {
+  const overdue      = isOverdue(task);
+  const dueSoon      = isDueSoon(task);
+  const isCompleted  = task.status === "completed";
   const isAssignedToMe = task.assignedTo?._id === currentUserId;
-  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "completed";
-  const priority = PRIORITY[task.priority] || PRIORITY.medium;
-  const statusStyle = STATUS_STYLES[task.status] || STATUS_STYLES.todo;
+  const priority     = PRIORITY[task.priority] || PRIORITY.medium;
+  const statusStyle  = STATUS_STYLES[task.status] || STATUS_STYLES.todo;
   const assigneeName = task.assignedTo?.name || "Unassigned";
+
+  // card border/bg state
+  const cardState = isCompleted ? "completed" : overdue ? "overdue" : dueSoon ? "soon" : "default";
 
   return (
     <>
@@ -50,10 +64,18 @@ const TaskCard = ({ task, isAdmin, currentUserId, onDelete, onStatusChange, onRe
           box-shadow: 0 4px 18px rgba(13,148,136,0.09);
           transform: translateY(-1px);
         }
-        .tc-wrap.overdue {
-          border-color: #fecdd3;
-          background: #fffafa;
+        .tc-wrap.overdue  { border-color: #fecdd3; background: #fffafa; }
+        .tc-wrap.soon     { border-color: #fde68a; background: #fffdf5; }
+        .tc-wrap.completed { border-color: #e2e8f0; background: #f8fafc; opacity: 0.78; }
+
+        /* status banner */
+        .tc-banner {
+          display: flex; align-items: center; gap: 7px;
+          font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+          padding: 6px 10px; border-radius: 9px; margin-bottom: -2px;
         }
+        .tc-banner.overdue { color: #e11d48; background: #fff1f2; }
+        .tc-banner.soon    { color: #b45309; background: #fef3c7; }
 
         /* header */
         .tc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -61,11 +83,7 @@ const TaskCard = ({ task, isAdmin, currentUserId, onDelete, onStatusChange, onRe
           font-family: 'Bricolage Grotesque', sans-serif;
           font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.4; flex: 1;
         }
-        .tc-overdue-pill {
-          font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
-          color: #e11d48; background: #fff1f2;
-          padding: 2px 8px; border-radius: 100px; white-space: nowrap; margin-top: 2px;
-        }
+        .tc-title.completed { text-decoration: line-through; color: #94a3b8; }
         .tc-delete {
           background: none; border: none; cursor: pointer; padding: 3px;
           border-radius: 7px; color: #cbd5e1; flex-shrink: 0;
@@ -121,14 +139,23 @@ const TaskCard = ({ task, isAdmin, currentUserId, onDelete, onStatusChange, onRe
         .tc-select:focus { border-color: #0d9488; }
       `}</style>
 
-      <div className={`tc-wrap${isOverdue ? " overdue" : ""}`}>
+      <div className={`tc-wrap ${cardState}`}>
+
+        {/* Status banner */}
+        {overdue && (
+          <div className="tc-banner overdue">
+            <Clock size={12} /> Deadline passed
+          </div>
+        )}
+        {dueSoon && !overdue && (
+          <div className="tc-banner soon">
+            <Clock size={12} /> Due within 24 hours
+          </div>
+        )}
 
         {/* Header */}
         <div className="tc-header">
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-            <span className="tc-title">{task.title}</span>
-            {isOverdue && <span className="tc-overdue-pill">⚠ Overdue</span>}
-          </div>
+          <span className={`tc-title${isCompleted ? " completed" : ""}`}>{task.title}</span>
           {isAdmin && (
             <button className="tc-delete" onClick={() => onDelete(task._id)} title="Delete task">
               <Trash2 size={14} />
@@ -137,17 +164,12 @@ const TaskCard = ({ task, isAdmin, currentUserId, onDelete, onStatusChange, onRe
         </div>
 
         {/* Description */}
-        {task.description && (
-          <p className="tc-desc">{task.description}</p>
-        )}
+        {task.description && <p className="tc-desc">{task.description}</p>}
 
         {/* Meta */}
         <div className="tc-meta">
           <div className="tc-meta-item">
-            <div
-              className="tc-avatar"
-              style={{ background: avatarColor(assigneeName) }}
-            >
+            <div className="tc-avatar" style={{ background: avatarColor(assigneeName) }}>
               {assigneeName.charAt(0).toUpperCase()}
             </div>
             <span className="tc-meta-text">{assigneeName}</span>
@@ -155,8 +177,14 @@ const TaskCard = ({ task, isAdmin, currentUserId, onDelete, onStatusChange, onRe
 
           {task.dueDate && (
             <div className="tc-meta-item">
-              <Calendar size={12} color={isOverdue ? "#e11d48" : "#94a3b8"} />
-              <span className="tc-meta-text" style={isOverdue ? { color: "#e11d48" } : {}}>
+              <Calendar
+                size={12}
+                color={overdue ? "#e11d48" : dueSoon ? "#b45309" : "#94a3b8"}
+              />
+              <span
+                className="tc-meta-text"
+                style={{ color: overdue ? "#e11d48" : dueSoon ? "#b45309" : undefined }}
+              >
                 {new Date(task.dueDate).toLocaleDateString("en-US", {
                   month: "short", day: "numeric", year: "numeric",
                 })}
@@ -167,10 +195,7 @@ const TaskCard = ({ task, isAdmin, currentUserId, onDelete, onStatusChange, onRe
 
         {/* Footer */}
         <div className="tc-footer">
-          <span
-            className="tc-priority"
-            style={{ color: priority.color, background: priority.bg }}
-          >
+          <span className="tc-priority" style={{ color: priority.color, background: priority.bg }}>
             {priority.label}
           </span>
 
@@ -185,10 +210,7 @@ const TaskCard = ({ task, isAdmin, currentUserId, onDelete, onStatusChange, onRe
                 value={task.status}
                 onChange={(e) => onStatusChange(task, e.target.value)}
                 className="tc-select"
-                style={{
-                  color: statusStyle.color,
-                  background: statusStyle.bg,
-                }}
+                style={{ color: statusStyle.color, background: statusStyle.bg }}
               >
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>{STATUS_LABELS[s]}</option>

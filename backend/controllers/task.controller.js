@@ -1,9 +1,8 @@
 const Task = require("../models/Task");
 const Workspace = require("../models/Workspace");
 const logActivity = require("../utils/logActivity");
-const {
-  createTaskService,
-} = require("../services/task.service");
+const { createTaskService } = require("../services/task.service");
+const { getIO } = require("../config/socket");
 
 const createTask = async (req, res) => {
   try {
@@ -17,12 +16,10 @@ const createTask = async (req, res) => {
     } = req.body;
 
     const workspace = await Workspace.findById(workspaceId);
-
     if (!workspace) {
-      return res.status(404).json({
-        message: "Workspace not found",
-      });
+      return res.status(404).json({ message: "Workspace not found" });
     }
+
     const task = await createTaskService({
       title,
       description,
@@ -32,21 +29,25 @@ const createTask = async (req, res) => {
       priority,
       dueDate,
     });
+
+    // Get assigned user name for activity
+    const User = require("../models/User");
+    const assignedUser = assignedTo ? await User.findById(assignedTo) : null;
+
     await logActivity({
       workspace: workspaceId,
       user: req.user._id,
-      action: "Created a task",
+      action: `assigned task "${title}" to ${assignedUser?.name || "someone"}`,
       entityType: "task",
       entityId: task._id,
     });
-    const { getIO } = require("../config/socket");
-    // after logActivity
+
+    // Emit new-activity to workspace room
     getIO().to(workspaceId).emit("new-activity");
+
     res.status(201).json(task);
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 

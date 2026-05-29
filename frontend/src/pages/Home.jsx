@@ -1,9 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import {
-  Zap, Users, MessageSquare, FileText,
-  CheckCircle, Video, ArrowRight, Sparkles
-} from "lucide-react";
+import { Zap, Users, MessageSquare, FileText, CheckCircle, Video, ArrowRight } from "lucide-react";
+
 
 /* ─────────────────────────────────────────
    DATA
@@ -14,7 +12,7 @@ const FEATURES = [
   { icon: FileText,     title: "Collaborative Notes",    desc: "Shared bullet-point notes for your whole team. Keep goals, decisions, and context in one place." },
   { icon: Video,        title: "One-click Google Meet",  desc: "Start a meeting instantly. Team members get notified and join with a single click." },
   { icon: Users,        title: "Presence Awareness",     desc: "See who's online in real-time. Know who's active in your workspace right now." },
-  { icon: Sparkles,     title: "AI-powered Insights",    desc: "Break complex tasks into actionable subtasks with AI. Work smarter, not harder." },
+  { icon: Zap, title: "Task Progress Tracking", desc: "Track what's done, in-progress, or overdue  instantly." },
 ];
 
 const STEPS = [

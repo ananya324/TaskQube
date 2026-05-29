@@ -76,6 +76,8 @@ const joinWorkspace = async (req, res) => {
       entityType: "workspace",
       entityId: workspace._id,
     });
+    // Emit new-activity to workspace room
+getIO().to(workspace._id.toString()).emit("new-activity");
 
     res.status(200).json({
       message: "Workspace joined successfully",
