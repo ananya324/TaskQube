@@ -1,23 +1,23 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { Zap, Users, MessageSquare, FileText, CheckCircle, Video, ArrowRight } from "lucide-react";
-
+import ShowcaseSection from "../components/showcaseSection/ShowcaseSection";
 
 /* ─────────────────────────────────────────
    DATA
 ───────────────────────────────────────── */
 const FEATURES = [
-  { icon: CheckCircle,  title: "Smart Task Management",  desc: "Admins assign tasks with priorities and deadlines. Everyone knows exactly what to do and when." },
-  { icon: MessageSquare,title: "Real-time Team Chat",     desc: "Communicate instantly inside every workspace. No more switching between apps mid-flow." },
-  { icon: FileText,     title: "Collaborative Notes",    desc: "Shared bullet-point notes for your whole team. Keep goals, decisions, and context in one place." },
-  { icon: Video,        title: "One-click Google Meet",  desc: "Start a meeting instantly. Team members get notified and join with a single click." },
-  { icon: Users,        title: "Presence Awareness",     desc: "See who's online in real-time. Know who's active in your workspace right now." },
-  { icon: Zap, title: "Task Progress Tracking", desc: "Track what's done, in-progress, or overdue  instantly." },
+  { icon: CheckCircle, title: "Smart Task Management", desc: "Admins assign tasks with priorities and deadlines. Everyone knows exactly what to do and when." },
+  { icon: MessageSquare, title: "Real-time Team Chat", desc: "Communicate instantly inside every workspace. No more switching between apps mid-flow." },
+  { icon: FileText, title: "Collaborative Notes", desc: "Shared bullet-point notes for your whole team. Keep goals, decisions, and context in one place." },
+  { icon: Video, title: "One-click Google Meet", desc: "Start a meeting instantly. Team members get notified and join with a single click." },
+  { icon: Users, title: "Presence Awareness", desc: "See who's online in real-time. Know who's active in your workspace right now." },
+  { icon: Zap, title: "Task Progress Tracking", desc: "Track what's done, in-progress, or overdue instantly." },
 ];
 
 const STEPS = [
   { step: "01", title: "Create a Workspace", desc: "Sign up and spin up a workspace for your team or project in under a minute." },
-  { step: "02", title: "Invite Your Team",   desc: "Share your unique room code. Teammates join instantly — no email invites required." },
+  { step: "02", title: "Invite Your Team", desc: "Share your unique room code. Teammates join instantly — no email invites required." },
   { step: "03", title: "Assign & Collaborate", desc: "Assign tasks, chat in real-time, take notes, and start meetings — all in one place." },
 ];
 
@@ -61,22 +61,17 @@ function Reveal({ children, delay = 0, style = {}, ...rest }) {
   );
 }
 
-/* Animated teal grid background */
 function GridBg() {
   return (
-    <div style={{
-      position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none",
-    }}>
-      {/* Grid lines */}
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
       <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, opacity: 0.055 }}>
         <defs>
           <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse">
-            <path d="M 56 0 L 0 0 0 56" fill="none" stroke="#0d9488" strokeWidth="1"/>
+            <path d="M 56 0 L 0 0 0 56" fill="none" stroke="#0d9488" strokeWidth="1" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>
-      {/* Radial glow */}
       <div style={{
         position: "absolute", top: "30%", left: "50%", transform: "translate(-50%,-50%)",
         width: 700, height: 500,
@@ -97,12 +92,23 @@ function GridBg() {
 const Home = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 24);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  // Close menu on outside scroll
+  useEffect(() => {
+    if (!menuOpen) return;
+    const fn = () => setMenuOpen(false);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, [menuOpen]);
+
+  const toggleMenu = () => setMenuOpen(p => !p);
 
   return (
     <div style={{ minHeight: "100vh", background: "#f0fdfa", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#0f172a", overflowX: "hidden" }}>
@@ -112,7 +118,7 @@ const Home = () => {
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* NAV */
+        /* ── NAV BASE ── */
         .nav {
           position: fixed; top: 0; left: 0; right: 0; z-index: 100;
           padding: 0 48px; height: 64px;
@@ -126,9 +132,10 @@ const Home = () => {
         }
         .nav-logo {
           font-family: 'Bricolage Grotesque', sans-serif;
-          font-weight: 800; font-size: 20px; letter-spacing: -0.5px;
-          color: #0d9488;
+          font-weight: 800; font-size: 20px; letter-spacing: -0.5px; color: #0d9488;
         }
+
+        /* ── DESKTOP NAV BUTTONS ── */
         .nav-actions { display: flex; align-items: center; gap: 8px; }
         .btn-ghost {
           background: none; border: none; cursor: pointer;
@@ -138,8 +145,7 @@ const Home = () => {
         }
         .btn-ghost:hover { color: #0d9488; background: rgba(13,148,136,0.07); }
         .btn-primary {
-          background: #0d9488; color: #fff;
-          border: none; cursor: pointer;
+          background: #0d9488; color: #fff; border: none; cursor: pointer;
           font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700;
           padding: 9px 20px; border-radius: 9px;
           box-shadow: 0 2px 12px rgba(13,148,136,0.25);
@@ -147,7 +153,73 @@ const Home = () => {
         }
         .btn-primary:hover { background: #0f766e; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(13,148,136,0.35); }
 
-        /* HERO */
+        /* ── HAMBURGER ── */
+        .hamburger {
+          display: none;
+          flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+          width: 40px; height: 40px; border-radius: 10px;
+          background: rgba(13,148,136,0.08);
+          border: 1.5px solid rgba(13,148,136,0.18);
+          cursor: pointer; flex-shrink: 0;
+          transition: background 0.2s, border-color 0.2s;
+        }
+        .hamburger:hover { background: rgba(13,148,136,0.14); border-color: rgba(13,148,136,0.3); }
+        .hamburger .bar {
+          width: 16px; height: 1.75px; background: #0d9488;
+          border-radius: 2px;
+          transition: transform 0.3s cubic-bezier(.16,1,.3,1), opacity 0.2s ease;
+          transform-origin: center;
+        }
+        .hamburger.open .bar:nth-child(1) { transform: translateY(6.75px) rotate(45deg); }
+        .hamburger.open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .hamburger.open .bar:nth-child(3) { transform: translateY(-6.75px) rotate(-45deg); }
+
+        /* ── MOBILE DROPDOWN MENU ── */
+        .mobile-menu {
+          display: none;
+          position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
+          background: rgba(240,253,250,0.97);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(13,148,136,0.14);
+          overflow: hidden;
+          max-height: 0; opacity: 0;
+          transition: max-height 0.38s cubic-bezier(.16,1,.3,1), opacity 0.25s ease;
+        }
+        .mobile-menu.open { max-height: 220px; opacity: 1; }
+        .mobile-menu-inner {
+          padding: 14px 20px 20px;
+          display: flex; flex-direction: column; gap: 8px;
+        }
+        .mobile-nav-item {
+          padding: 12px 16px; border-radius: 11px; border: none;
+          background: none; text-align: left; cursor: pointer; width: 100%;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 600;
+          color: #334155;
+          transition: background 0.2s, color 0.2s;
+        }
+        .mobile-nav-item:hover { background: rgba(13,148,136,0.08); color: #0d9488; }
+        .mobile-nav-divider {
+          height: 1px; background: rgba(13,148,136,0.1); margin: 2px 0;
+        }
+        .mobile-nav-cta {
+          padding: 13px 16px; border-radius: 11px; border: none;
+          background: #0d9488; color: #fff; cursor: pointer; text-align: center; width: 100%;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 700;
+          box-shadow: 0 4px 18px rgba(13,148,136,0.3);
+          transition: background 0.2s, transform 0.15s;
+        }
+        .mobile-nav-cta:hover { background: #0f766e; transform: translateY(-1px); }
+
+        /* ── RESPONSIVE BREAKPOINTS ── */
+        @media (max-width: 600px) {
+          .nav { padding: 0 18px; }
+          .nav-actions { display: none; }
+          .hamburger { display: flex; }
+          .mobile-menu { display: block; }
+        }
+
+        /* ── HERO ── */
         .hero {
           position: relative; min-height: 100vh;
           display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -199,66 +271,36 @@ const Home = () => {
         .cta-sec:hover { border-color: #0d9488; box-shadow: 0 4px 16px rgba(13,148,136,0.1); }
         .hero-note { color: #94a3b8; font-size: 13px; margin-top: 22px; animation: drop 0.7s 0.32s ease both; }
 
-        /* DIVIDER */
+        /* ── SECTIONS ── */
         .section-divider {
           height: 1px; background: linear-gradient(90deg, transparent, rgba(13,148,136,0.15), transparent);
           margin: 0 48px;
         }
-
-        /* SECTIONS */
         .section { padding: 96px 24px; }
         .section-inner { max-width: 1080px; margin: 0 auto; }
         .section-header { text-align: center; margin-bottom: 60px; }
-        .eyebrow {
-          display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
-          text-transform: uppercase; color: #0d9488; margin-bottom: 10px;
-        }
-        .section-h2 {
-          font-family: 'Bricolage Grotesque', sans-serif;
-          font-size: clamp(26px, 3.5vw, 40px); font-weight: 800; letter-spacing: -1px;
-          color: #0f172a; margin-bottom: 12px;
-        }
+        .eyebrow { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #0d9488; margin-bottom: 10px; }
+        .section-h2 { font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(26px, 3.5vw, 40px); font-weight: 800; letter-spacing: -1px; color: #0f172a; margin-bottom: 12px; }
         .section-lead { font-size: 16px; color: #64748b; max-width: 440px; margin: 0 auto; line-height: 1.7; }
 
-        /* FEATURES GRID */
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
-        }
+        /* ── FEATURES ── */
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         @media (max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 560px) { .features-grid { grid-template-columns: 1fr; } }
-
         .feat-card {
           background: #fff; border: 1.5px solid #e2e8f0;
           border-radius: 16px; padding: 28px 24px;
-          transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
-          cursor: default;
+          transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s; cursor: default;
         }
-        .feat-card:hover {
-          border-color: #5eead4;
-          box-shadow: 0 8px 32px rgba(13,148,136,0.1);
-          transform: translateY(-4px);
-        }
-        .feat-icon {
-          width: 44px; height: 44px; border-radius: 12px;
-          background: rgba(13,148,136,0.08);
-          display: flex; align-items: center; justify-content: center;
-          margin-bottom: 16px;
-        }
-        .feat-title {
-          font-family: 'Bricolage Grotesque', sans-serif;
-          font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 8px;
-        }
+        .feat-card:hover { border-color: #5eead4; box-shadow: 0 8px 32px rgba(13,148,136,0.1); transform: translateY(-4px); }
+        .feat-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(13,148,136,0.08); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+        .feat-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
         .feat-desc { font-size: 13.5px; color: #64748b; line-height: 1.7; }
 
-        /* STEPS */
+        /* ── STEPS ── */
         .steps-section { background: #fff; }
-        .steps-grid {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-        }
+        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         @media (max-width: 700px) { .steps-grid { grid-template-columns: 1fr; } }
-
         .step-card {
           border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 32px 24px;
           position: relative; overflow: hidden;
@@ -267,35 +309,26 @@ const Home = () => {
         .step-card::after {
           content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
           background: linear-gradient(90deg, #0d9488, #06b6d4);
-          transform: scaleX(0); transform-origin: left;
-          transition: transform 0.35s ease;
+          transform: scaleX(0); transform-origin: left; transition: transform 0.35s ease;
         }
         .step-card:hover::after { transform: scaleX(1); }
         .step-card:hover { border-color: #99f6e4; box-shadow: 0 8px 28px rgba(13,148,136,0.09); transform: translateY(-3px); }
-        .step-num {
-          font-family: 'Bricolage Grotesque', sans-serif; font-size: 48px; font-weight: 800;
-          color: #ccfbf1; line-height: 1; margin-bottom: 16px; user-select: none;
-        }
+        .step-num { font-family: 'Bricolage Grotesque', sans-serif; font-size: 48px; font-weight: 800; color: #ccfbf1; line-height: 1; margin-bottom: 16px; user-select: none; }
         .step-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
         .step-desc { font-size: 13.5px; color: #64748b; line-height: 1.7; }
 
-        /* CTA SECTION */
+        /* ── CTA SECTION ── */
         .cta-section {
           background: linear-gradient(135deg, #0f172a 0%, #134e4a 100%);
           padding: 100px 24px; text-align: center; position: relative; overflow: hidden;
         }
         .cta-section::before {
-          content: ''; position: absolute;
-          top: 50%; left: 50%; transform: translate(-50%, -50%);
+          content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
           width: 600px; height: 400px;
           background: radial-gradient(ellipse, rgba(20,184,166,0.2) 0%, transparent 65%);
           pointer-events: none;
         }
-        .cta-h2 {
-          font-family: 'Bricolage Grotesque', sans-serif;
-          font-size: clamp(28px, 4vw, 50px); font-weight: 800; letter-spacing: -1.5px;
-          color: #f0fdfa; margin-bottom: 14px; position: relative;
-        }
+        .cta-h2 { font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(28px, 4vw, 50px); font-weight: 800; letter-spacing: -1.5px; color: #f0fdfa; margin-bottom: 14px; position: relative; }
         .cta-sub { color: rgba(240,253,250,0.5); font-size: 16px; margin-bottom: 36px; position: relative; }
         .cta-btn {
           display: inline-flex; align-items: center; gap: 9px;
@@ -307,7 +340,7 @@ const Home = () => {
         }
         .cta-btn:hover { background: #0d9488; transform: translateY(-2px); box-shadow: 0 10px 42px rgba(20,184,166,0.5); }
 
-        /* FOOTER */
+        /* ── FOOTER ── */
         .footer {
           background: #0f172a; border-top: 1px solid rgba(255,255,255,0.06);
           padding: 22px 48px; display: flex; align-items: center; justify-content: space-between;
@@ -316,22 +349,54 @@ const Home = () => {
         .footer-logo { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 17px; color: #14b8a6; }
         .footer-copy { color: rgba(255,255,255,0.25); font-size: 13px; }
 
-        /* pulse dot */
+        /* ── ANIMATIONS ── */
         .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #0d9488; margin-right: 7px; position: relative; }
         .dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: rgba(13,148,136,0.3); animation: ping 1.8s ease-out infinite; }
-        @keyframes ping { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(2.2); opacity: 0; } }
-
-        @keyframes drop { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes ping  { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(2.2); opacity: 0; } }
+        @keyframes drop  { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       {/* NAV */}
       <nav className={`nav${scrolled ? " solid" : ""}`}>
         <span className="nav-logo">TaskQube</span>
+
+        {/* Desktop */}
         <div className="nav-actions">
           <button className="btn-ghost" onClick={() => navigate("/login")}>Sign in</button>
           <button className="btn-primary" onClick={() => navigate("/register")}>Get started free</button>
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className={`hamburger${menuOpen ? " open" : ""}`}
+          onClick={toggleMenu}
+          aria-label="Toggle menu"
+          aria-expanded={menuOpen}
+        >
+          <span className="bar" />
+          <span className="bar" />
+          <span className="bar" />
+        </button>
       </nav>
+
+      {/* Mobile dropdown */}
+      <div className={`mobile-menu${menuOpen ? " open" : ""}`}>
+        <div className="mobile-menu-inner">
+          <button
+            className="mobile-nav-item"
+            onClick={() => { navigate("/login"); setMenuOpen(false); }}
+          >
+            Sign in
+          </button>
+          <div className="mobile-nav-divider" />
+          <button
+            className="mobile-nav-cta"
+            onClick={() => { navigate("/register"); setMenuOpen(false); }}
+          >
+            Get started free →
+          </button>
+        </div>
+      </div>
 
       {/* HERO */}
       <section className="hero">
@@ -372,7 +437,6 @@ const Home = () => {
               <p className="section-lead">Stop juggling between tools. TaskQube has everything built in.</p>
             </div>
           </Reveal>
-
           <div className="features-grid">
             {FEATURES.map(({ icon: Icon, title, desc }, i) => (
               <Reveal key={title} delay={i * 70}>
@@ -389,6 +453,12 @@ const Home = () => {
         </div>
       </section>
 
+      {/* SHOWCASE */}
+      <div className="section-divider" />
+      <div style={{ background: "red", minHeight: 100 }}>
+        <ShowcaseSection />
+      </div>
+
       {/* HOW IT WORKS */}
       <div className="section-divider" />
       <section className="section steps-section">
@@ -400,7 +470,6 @@ const Home = () => {
               <p className="section-lead">No onboarding calls. No setup headaches. Just create and collaborate.</p>
             </div>
           </Reveal>
-
           <div className="steps-grid">
             {STEPS.map(({ step, title, desc }, i) => (
               <Reveal key={step} delay={i * 100}>
