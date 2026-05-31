@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -7,16 +6,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#0D9488",
-        "primary-hover": "#059669",
-        surface: "#FFFFFF",
-        border: "#E5E7EB",
-        muted: "#6B7280",
-        background: "#F7F8FA",
+        primary: "#0d9488",
+        "primary-hover": "#0f766e",
+        surface: "#ffffff",
+        border: "#d1fae5",
+        muted: "#2d8a81",
+        background: "#f0fdfa",
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        heading: ['Plus Jakarta Sans', 'sans-serif'],
+        sans: ['DM Sans', 'sans-serif'],
+        heading: ['DM Sans', 'sans-serif'],
       },
     },
   },

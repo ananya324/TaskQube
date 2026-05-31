@@ -134,7 +134,7 @@ const Dashboard = () => {
           padding: 8px 16px; border-radius: 10px; cursor: pointer;
           transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
-        .btn-outline:hover { border-color: #5eead4; box-shadow: 0 2px 10px rgba(13,148,136,0.1); background: #f0fdfa; }
+        .btn-outline:hover { border-color: #2d8a81; box-shadow: 0 2px 10px rgba(13,148,136,0.1); background: #f0fdfa; }
 
         .btn-solid {
           display: inline-flex; align-items: center; gap: 7px;
