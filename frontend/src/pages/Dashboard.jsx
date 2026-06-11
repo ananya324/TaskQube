@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 import { Plus, LogIn, Users, ChevronRight, LogOut, LayoutGrid, X } from "lucide-react";
 import { requestToJoin } from "../api/joinRequest.api";
 import { getSocket } from "../socket/socket";
-import { useAuth } from "../context/AuthContext";
 
 
 
