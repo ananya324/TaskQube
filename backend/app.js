@@ -10,6 +10,8 @@ const errorHandler = require("./middleware/error.middleware");
 const apiLimiter = require("./middleware/rateLimit.middleware");
 const aiRoutes = require("./routes/ai.routes");
 const messageRoutes = require("./routes/message.routes");
+const joinRequestRoutes = require("./routes/joinRequest.routes");
+
 
 const app = express();
 app.set("trust proxy", 1);
@@ -34,6 +36,8 @@ app.use(errorHandler);
 app.use(apiLimiter);
 app.use("/api/ai", aiRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/workspaces", joinRequestRoutes);
+
 
 
 app.get("/", (req, res) => {
