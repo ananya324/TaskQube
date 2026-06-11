@@ -5,6 +5,11 @@ import { useAuth } from "../context/AuthContext";
 import { useWorkspace } from "../context/WorkspaceContext";
 import toast from "react-hot-toast";
 import { Plus, LogIn, Users, ChevronRight, LogOut, LayoutGrid, X } from "lucide-react";
+import { requestToJoin } from "../api/joinRequest.api";
+import { getSocket } from "../socket/socket";
+import { useAuth } from "../context/AuthContext";
+
+
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -47,13 +52,13 @@ const Dashboard = () => {
     }
   };
 
+
   const handleJoin = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const data = await joinWorkspace({ roomCode: joinCode });
-      setWorkspaces((prev) => [...prev, data.workspace || data]);
-      toast.success("Joined workspace!");
+      const data = await requestToJoin(joinCode);
+      toast.success(data.message);
       setShowJoin(false);
       setJoinCode("");
     } catch (err) {
@@ -62,6 +67,24 @@ const Dashboard = () => {
       setSubmitting(false);
     }
   };
+  useEffect(() => {
+    const socket = getSocket();
+
+    socket.on("join-request-response", ({ userId, status, workspace }) => {
+      if (userId === user?._id) {
+        if (status === "accepted") {
+          toast.success(`You have been accepted into ${workspace.name}!`);
+          setWorkspaces((prev) => [...prev, workspace]);
+        } else {
+          toast.error(`Your request to join ${workspace.name} was rejected.`);
+        }
+      }
+    });
+
+    return () => {
+      socket.off("join-request-response");
+    };
+  }, [user?._id]);
 
   // Teal palette colours for workspace avatars
   const AVATAR_COLORS = [
