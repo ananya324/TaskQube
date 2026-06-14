@@ -7,6 +7,8 @@ import { SocketProvider } from "./context/SocketContext";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import "./index.css";
 import App from "./App";
+import "@fontsource-variable/geist";
+import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

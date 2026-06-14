@@ -320,8 +320,15 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 9;
-  background: radial-gradient(ellipse 36% 40% at 50% 50%, rgba(240,253,250,0.75) 0%, transparent 100%);
+
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(13,148,136,0.04),
+      transparent 65%
+    );
+
+  z-index: 0;
 }
 
 /* custom cursor */

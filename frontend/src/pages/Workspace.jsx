@@ -151,14 +151,20 @@ const Workspace = () => {
           <Wifi size={14} className="text-emerald-500" />
           <span className="text-xs text-muted">{onlineUsers.length} online</span>
           <div className="flex -space-x-2 ml-1">
-            {onlineUsers.slice(0, 4).map((uid, i) => (
-              <div
-                key={i}
-                className="w-7 h-7 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center border-2 border-surface font-heading font-semibold"
-              >
-                {uid?.charAt(0)?.toUpperCase() || "?"}
-              </div>
-            ))}
+            {onlineUsers.slice(0, 4).map((uid, i) => {
+              const member = workspace?.members?.find(
+                (m) => m._id === uid
+              );
+
+              return (
+                <div
+                  key={i}
+                  className="w-7 h-7 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center border-2 border-surface font-heading font-semibold"
+                >
+                  {member?.name?.charAt(0)?.toUpperCase() || "?"}
+                </div>
+              );
+            })}
             {onlineUsers.length > 4 && (
               <div className="w-7 h-7 rounded-full bg-gray-100 text-xs flex items-center justify-center border-2 border-surface">
                 +{onlineUsers.length - 4}
