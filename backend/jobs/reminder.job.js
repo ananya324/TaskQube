@@ -2,14 +2,7 @@ const cron = require("node-cron");
 const Reminder = require("../models/Reminder");
 
 const startReminderJob = () => {
-  // Run every minute
-  // ┌──────── minute (0 - 59)
-  // │ ┌────── hour (0 - 23)
-  // │ │ ┌──── day of month (1 - 31)
-  // │ │ │ ┌── month (1 - 12)
-  // │ │ │ │ ┌─ day of week (0 - 7)
-  // │ │ │ │ │
-  // * * * * *
+ 
 
   cron.schedule("* * * * *", async () => {
     try {

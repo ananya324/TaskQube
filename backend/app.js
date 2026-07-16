@@ -13,30 +13,31 @@ const messageRoutes = require("./routes/message.routes");
 const joinRequestRoutes = require("./routes/joinRequest.routes");
 
 
+
 const app = express();
 app.set("trust proxy", 1);
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: "http://localhost:5173",
     credentials: true,
-
   })
 );
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));//Allows backend to read form data.
 app.use(cookieParser());
-app.use("/api/auth",authRoutes);
-app.use("/api/workspaces",workspaceRoutes);
-app.use("/api/tasks",taskRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/workspaces", workspaceRoutes);
+app.use("/api/tasks", taskRoutes);
 app.use("/api/notes", noteRoutes);
-app.use("/api/reminders",reminderRoutes);
+app.use("/api/reminders", reminderRoutes);
 app.use(errorHandler);
 app.use(apiLimiter);
 app.use("/api/ai", aiRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/workspaces", joinRequestRoutes);
+
 
 
 

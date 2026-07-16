@@ -1,15 +1,42 @@
 import { useEffect, useState } from "react";
-import { Copy, Crown, Check, X, UserPlus } from "lucide-react";
+import { Copy, Crown, Check, X, UserPlus, MoreVertical, Trash2, LogOut, } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { getPendingRequests, acceptRequest, rejectRequest } from "../../api/joinRequest.api";
 import { getSocket } from "../../socket/socket";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import {
+  removeMember,
+  exitSpace,
+} from "../../api/workspace.api";
+import ConfirmModal from "./confirmModal";
 
-const MembersSection = ({ workspace, onlineUsers }) => {
+
+
+const MembersSection = ({ workspace, setWorkspace, onlineUsers }) => {
   const { user } = useAuth();
   const isAdmin = workspace?.owner?._id === user?._id;
   const [requests, setRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
+  const [openMenu, setOpenMenu] = useState(null);
+  const navigate = useNavigate();
+  const [confirmModal, setConfirmModal] = useState({
+    open: false,
+    type: null,
+    member: null,
+  });
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenMenu(null);
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (isAdmin && workspace?._id) {
@@ -67,6 +94,39 @@ const MembersSection = ({ workspace, onlineUsers }) => {
   const handleCopyCode = () => {
     navigator.clipboard.writeText(workspace?.roomCode);
     toast.success("Room code copied!");
+  };
+  const handleRemove = async (memberId) => {
+    try {
+      await removeMember(workspace._id, memberId);
+
+      setWorkspace((prev) => ({
+        ...prev,
+        members: prev.members.filter(
+          (member) => member._id !== memberId
+        ),
+      }));
+
+      toast.success("Member removed");
+      setOpenMenu(null);
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to remove member"
+      );
+    }
+  };
+
+  const handleLeave = async () => {
+    try {
+      await exitSpace(workspace._id);
+
+      toast.success("You left the workspace");
+
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to leave workspace"
+      );
+    }
   };
 
   return (
@@ -177,18 +237,21 @@ const MembersSection = ({ workspace, onlineUsers }) => {
             const isOwner = member._id === workspace?.owner?._id;
             const isMe = member._id === user?._id;
 
+            const showMenu =
+              (isAdmin && !isOwner) ||
+              (!isAdmin && isMe);
+
             return (
               <div
-                key={member._id || i}
+                key={member._id}
                 className="flex items-center gap-3 py-3 border-b border-border last:border-0"
               >
                 <div className="relative">
                   <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-heading font-bold text-sm">
                     {member?.name?.charAt(0).toUpperCase()}
                   </div>
-                  <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-surface ${
-                    isOnline ? "bg-emerald-500" : "bg-gray-300"
-                  }`} />
+                  <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-surface ${isOnline ? "bg-emerald-500" : "bg-gray-300"
+                    }`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -211,15 +274,72 @@ const MembersSection = ({ workspace, onlineUsers }) => {
                       Offline
                     </span>
                   )}
+
                   {isMe && (
                     <span className="text-xs bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-full">
                       You
                     </span>
                   )}
+
                   {isOwner && (
                     <span className="text-xs bg-amber-50 text-amber-700 font-medium px-2 py-0.5 rounded-full">
                       Admin
                     </span>
+                  )}
+
+                  {showMenu && (
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenu(openMenu === member._id ? null : member._id);
+                        }}
+                        className="p-1 rounded-lg hover:bg-gray-100 transition"
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+
+                      {openMenu === member._id && (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-8 w-44 bg-white border border-border rounded-xl shadow-lg py-2 z-50"
+                        >
+                          {isAdmin ? (
+                            <button
+                              onClick={() => {
+                                setOpenMenu(null);
+
+                                setConfirmModal({
+                                  open: true,
+                                  type: "remove",
+                                  member,
+                                });
+                              }}
+                              className="w-full px-4 py-2 flex items-center gap-2 text-sm text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 size={14} />
+                              Remove Member
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setOpenMenu(null);
+
+                                setConfirmModal({
+                                  open: true,
+                                  type: "leave",
+                                  member: null,
+                                });
+                              }}
+                              className="w-full px-4 py-2 flex items-center gap-2 text-sm text-red-600 hover:bg-red-50"
+                            >
+                              <LogOut size={14} />
+                              Leave Workspace
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -227,7 +347,47 @@ const MembersSection = ({ workspace, onlineUsers }) => {
           })}
         </div>
       </div>
+      <ConfirmModal
+        open={confirmModal.open}
+        title={
+          confirmModal.type === "remove"
+            ? "Remove member?"
+            : "Leave workspace?"
+        }
+        message={
+          confirmModal.type === "remove"
+            ? `Are you sure you want to remove ${confirmModal.member?.name}?`
+            : "Are you sure you want to leave this workspace?"
+        }
+        confirmText={
+          confirmModal.type === "remove"
+            ? "Remove"
+            : "Leave"
+        }
+        onCancel={() =>
+          setConfirmModal({
+            open: false,
+            type: null,
+            member: null,
+          })
+        }
+        onConfirm={async () => {
+          if (confirmModal.type === "remove") {
+            await handleRemove(confirmModal.member._id);
+          } else {
+            await handleLeave();
+          }
+
+          setConfirmModal({
+            open: false,
+            type: null,
+            member: null,
+          });
+        }}
+      />
+
     </div>
+
   );
 };
 

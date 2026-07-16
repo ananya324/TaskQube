@@ -120,10 +120,105 @@ const getWorkspaceById = async (req, res) => {
   }
 };
 
+
+const removeMember = async (req, res) => {
+  try {
+    const workspace = await Workspace.findById(req.params.workspaceId);
+    if (!workspace) {
+      return res.status(404).json({
+        message: "Workspace not found",
+      });
+    }
+    if (workspace.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "Only the workspace owner can remove members.",
+      });
+    }
+    const memberId = req.params.memberId;
+    const isMember = workspace.members.some(
+      (member) => member.toString() === memberId
+    );
+
+    if (memberId === workspace.owner.toString()) {
+      return res.status(400).json({
+        message: "Workspace owner cannot be removed.",
+      });
+    }
+    if (!isMember) {
+      return res.status(404).json({
+        message: "Member not found",
+      });
+    }
+    workspace.members = workspace.members.filter(
+      (member) => member.toString() !== memberId
+    );
+
+    await workspace.save();
+
+    await User.findByIdAndUpdate(memberId, {
+      $pull: {
+        workspaces: workspace._id,
+      },
+    });
+    res.status(200).json({
+      message: "Member removed successfully"
+    });
+  }
+  catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+const exitSpace = async (req, res) => {
+  try {
+    const workspace = await Workspace.findById(req.params.workspaceId)
+    if (!workspace) {
+      return res.status(404).json({
+        message: "Workspace not found",
+      });
+    }
+
+    const memberId = req.user._id;
+    const isMember = workspace.members.some(
+      member => member.toString() === memberId.toString()
+    );
+    if (!isMember) {
+      return res.status(404).json({
+        message: "Member not found",
+      });
+    }
+    if (workspace.owner.toString() === req.user._id.toString()) {
+      return res.status(400).json({
+        message: "Workspace owner cannot leave. Transfer ownership first.",
+      });
+    }
+    workspace.members = workspace.members.filter(
+      member => member.toString() !== memberId.toString()
+    );
+
+    await User.findByIdAndUpdate(memberId, {
+      $pull: {
+        workspaces: workspace._id
+      }
+    });
+
+    await workspace.save();
+
+    res.status(200).json({
+      message: "Left workspace successfully"
+    });
+
+  }
+  catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createWorkspace,
   getUserWorkspaces,
   joinWorkspace,
   getWorkspaceById,
   getWorkspaceActivities,
+  removeMember,
+  exitSpace,
 };

@@ -222,6 +222,7 @@ const Workspace = () => {
         {activeTab === "members" && (
           <MembersSection
             workspace={workspace}
+            setWorkspace={setWorkspace}
             onlineUsers={onlineUsers}
           />
         )}

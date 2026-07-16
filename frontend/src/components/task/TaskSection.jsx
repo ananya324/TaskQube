@@ -8,30 +8,38 @@ import AssignTaskModal from "./AssignTaskModal";
 import toast from "react-hot-toast";
 
 const STATUS_COLS = [
-  { key: "todo",        label: "To Do" },
+  { key: "todo", label: "To Do" },
   { key: "in-progress", label: "In Progress" },
-  { key: "completed",   label: "Completed" },
+  { key: "completed", label: "Completed" },
 ];
 
 const STATUS_DOT = {
-  "todo":        "#94a3b8",
+  "todo": "#94a3b8",
   "in-progress": "#0891b2",
-  "completed":   "#059669",
+  "completed": "#059669",
 };
 
 const TaskSection = ({ workspaceId, members, isAdmin }) => {
   const { user } = useAuth();
-  const [tasks, setTasks]           = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [showModal, setShowModal]   = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const [reassignTask, setReassignTask] = useState(null);
 
   useEffect(() => { fetchTasks(); }, [workspaceId]);
 
   useEffect(() => {
     const socket = getSocket();
-    socket.on("new-task",    (task)   => setTasks((p) => [...p, task]));
-    socket.on("update-task", (updated)=> setTasks((p) => p.map((t) => t._id === updated._id ? updated : t)));
+    socket.on("new-task", (task) =>
+      setTasks((prev) => {
+        if (prev.some((t) => t._id === task._id)) {
+          return prev;
+        }
+
+        return [...prev, task];
+      })
+    );
+    socket.on("update-task", (updated) => setTasks((p) => p.map((t) => t._id === updated._id ? updated : t)));
     socket.on("delete-task", (taskId) => setTasks((p) => p.filter((t) => t._id !== taskId)));
     return () => { socket.off("new-task"); socket.off("update-task"); socket.off("delete-task"); };
   }, []);
@@ -80,7 +88,7 @@ const TaskSection = ({ workspaceId, members, isAdmin }) => {
 
   const handleReassign = (task) => { setReassignTask(task); setShowModal(true); };
 
-  const myTasks   = tasks.filter((t) => t.assignedTo?._id === user?._id);
+  const myTasks = tasks.filter((t) => t.assignedTo?._id === user?._id);
   const teamTasks = tasks.filter((t) => t.assignedTo?._id !== user?._id);
 
   return (

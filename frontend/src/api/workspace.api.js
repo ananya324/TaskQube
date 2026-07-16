@@ -22,3 +22,17 @@ export const getWorkspaceActivities = async (workspaceId) => {
   const response = await axiosInstance.get(`/workspaces/${workspaceId}/activities`);
   return response.data;
 };
+
+export const removeMember = async (workspaceId,memberId) =>{
+  const response = await axiosInstance.delete(
+    `/workspaces/${workspaceId}/members/${memberId}`
+  );
+  return response.data;
+};
+
+export const exitSpace = async (workspaceId) =>{
+  const response = await axiosInstance.delete(
+    `/workspaces/${workspaceId}/leave`
+  );
+  return response.data;
+}

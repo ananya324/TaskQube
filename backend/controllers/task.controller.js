@@ -45,7 +45,11 @@ const createTask = async (req, res) => {
     // Emit new-activity to workspace room
     getIO().to(workspaceId).emit("new-activity");
 
-    res.status(201).json(task);
+    const populatedTask = await Task.findById(task._id)
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email");
+
+    res.status(201).json(populatedTask);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -88,7 +92,11 @@ const updateTaskStatus = async (req, res) => {
 
     await task.save();
 
-    res.status(200).json(task);
+    const populatedTask = await Task.findById(task._id)
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email");
+
+    res.status(201).json(populatedTask);
   } catch (error) {
     res.status(500).json({
       message: error.message,
